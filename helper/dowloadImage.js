@@ -6,6 +6,9 @@ const generateUUID = require('./generateUUID');
 
 function convertImageToLinkServer(url) {
 	if (!url) return '/assets/images/noimage.png';
+	if (url.includes('noimg_car.png')) return '/assets/images/noimage.png';
+	if (url.includes('/common/noimg/')) return '/assets/images/noimage.png';
+
 	let ext = path.extname(url);
 
 	if (ext === '.jpg' || ext === '.jpeg' || ext === '.png' || ext === '.gif' || ext === '.JPG') {
