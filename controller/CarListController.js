@@ -179,13 +179,19 @@ class CarsController {
 		let query = optionsFilter(filter, search);
 
 		try {
-			const count = await CarModel.countDocuments(query);
+			const count = await CarModel.countDocuments({
+				...query,
+				source_crawl: 'https://dautomall.com'
+			});
 			let currentPage = parseInt(page) || 1;
 
 			let perPage = parseInt(limit) || 10;
 			let paginate = pagination(currentPage, perPage, count);
 
-			const cars = await CarModel.find(query)
+			const cars = await CarModel.find({
+				...query,
+				source_crawl: 'https://dautomall.com'
+			})
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })
 				.select(
