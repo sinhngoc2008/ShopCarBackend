@@ -5,6 +5,10 @@ const CategoryModel = new mongoose.Schema(
 		category_name: {
 			type: String,
 			required: true
+		},
+		count: {
+			type: Number,
+			default: 0
 		}
 	},
 	{

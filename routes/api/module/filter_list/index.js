@@ -9,5 +9,6 @@ router.get('/color', FilterListController.get_color);
 router.get('/category', FilterListController.get_category);
 router.get('/cartype', FilterListController.get_car_type);
 router.get('/price', FilterListController.get_price);
+router.get('/model', FilterListController.get_model);
 
 module.exports = router;

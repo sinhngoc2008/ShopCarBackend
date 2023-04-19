@@ -1,3 +1,4 @@
+const { SOURCE_CRAWL } = require('../constants/enum');
 const take_decimal_number = require('../helper/floatNumberTwoCharacter');
 const CarModel = require('../model/CarModel');
 const SaleModel = require('../model/SaleModel');
@@ -14,11 +15,11 @@ async function updateCar(car, sale_price) {
 
 	let priceDisplayOnCar = take_decimal_number(priceDif + priceSale);
 
-	await CarModel.updateOne({ _id: car._id }, { price_display: priceDisplayOnCar });
+	await CarModel.findOneAndUpdate({ _id: car._id }, { price_display: priceDisplayOnCar });
 }
 class SaleController {
 	async setSale(req, res) {
-		const { is_sale, sale_price } = req.body;
+		const { is_sale, sale_price, source } = req.body;
 		if (typeof is_sale !== 'boolean') {
 			return res.status(200).json({
 				error_code: 101,
@@ -27,8 +28,16 @@ class SaleController {
 			});
 		}
 
+		if (!SOURCE_CRAWL.includes(source)) {
+			return res.status(200).json({
+				error_code: 101,
+				error_message: req.__('source is invalid'),
+				status: false
+			});
+		}
+
 		if (is_sale === true) {
-			if (!sale_price) {
+			if (sale_price === undefined || sale_price === null || sale_price === NaN) {
 				return res.status(200).json({
 					status: false,
 					error_code: 101,
@@ -46,7 +55,8 @@ class SaleController {
 		}
 
 		try {
-			const cars = await CarModel.find();
+			const cars = await CarModel.find({ source_crawl: source });
+
 			if (cars.length === 0) {
 				return res.status(200).json({
 					status: false,
@@ -54,31 +64,36 @@ class SaleController {
 					error_message: req.__('Cars not found')
 				});
 			}
-			const isSaleOn = await SaleModel.find();
 
-			if (isSaleOn.length === 0) {
+			const isSaleOn = await SaleModel.findOne({
+				source_crawl: source
+			});
+
+			if (!isSaleOn) {
 				const saleCreate = new SaleModel({
 					is_sale,
-					sale_price
+					sale_price,
+					source_crawl: source
 				});
 				await saleCreate.save();
 
-				if (saleCreate.is_sale) {
-					cars.forEach(car => updateCar(car, saleCreate.sale_price));
+				if (saleCreate.is_sale === true) {
+					cars.forEach(async car => await updateCar(car, saleCreate.sale_price));
 				}
 			} else {
-				if (is_sale) {
-					await SaleModel.findByIdAndUpdate(isSaleOn[0]._id, {
+				if (is_sale === true) {
+					await SaleModel.findByIdAndUpdate(isSaleOn._id, {
 						sale_price,
 						is_sale: true
 					});
-					cars.forEach(car => updateCar(car, sale_price));
+					cars.forEach(async car => await updateCar(car, sale_price));
 				} else {
-					await SaleModel.findByIdAndUpdate(isSaleOn[0]._id, {
+					await SaleModel.findByIdAndUpdate(isSaleOn._id, {
 						sale_price: 0,
 						is_sale: false
 					});
-					cars.forEach(car => updateCar(car, -sale_price));
+
+					cars.forEach(async car => await updateCar(car, 0));
 				}
 			}
 			res.status(200).json({
@@ -97,13 +112,16 @@ class SaleController {
 
 	async getSale(req, res) {
 		try {
-			const sale = await SaleModel.find().lean();
-			if (sale.length > 0) {
+			const { source } = req.body;
+			const sale = await SaleModel.findOne({
+				source_crawl: source
+			});
+			if (sale) {
 				res.status(200).json({
 					status: true,
 					status_code: 200,
-					data: sale[0],
-					message: req.__('Set sale successfully')
+					data: sale,
+					message: req.__('Get sale successfully')
 				});
 			} else {
 				res.status(200).json({
@@ -113,7 +131,81 @@ class SaleController {
 						is_sale: false,
 						sale_price: 0
 					},
-					message: req.__('Set sale successfully')
+					message: req.__('Get sale successfully')
+				});
+			}
+		} catch (error) {
+			res.status(500).json({
+				message: 'Server error',
+				error: error.message,
+				status_code: 500
+			});
+		}
+	}
+
+	async getListSale(req, res) {
+		try {
+			const sales = await SaleModel.find();
+			if (sales.length > 0) {
+				let sale = [];
+				if (sales.length === 1) {
+					const _sale = sales[0];
+					if (_sale.source_crawl === 'https://dautomall.com') {
+						sale = [
+							{
+								is_sale: _sale.is_sale,
+								sale_price: _sale.sale_price,
+								source_crawl: _sale.source_crawl
+							},
+							{
+								is_sale: false,
+								sale_price: 0,
+								source_crawl: 'https://www.djauto.co.kr'
+							}
+						];
+					}
+
+					if (_sale.source_crawl === 'https://www.djauto.co.kr') {
+						sale = [
+							{
+								is_sale: false,
+								sale_price: 0,
+								source_crawl: 'https://dautomall.com'
+							},
+							{
+								is_sale: _sale.is_sale,
+								sale_price: _sale.sale_price,
+								source_crawl: _sale.source_crawl
+							}
+						];
+					}
+				} else {
+					sale = sales;
+				}
+
+				res.status(200).json({
+					status: true,
+					status_code: 200,
+					data: sale,
+					message: req.__('Get list sale successfully')
+				});
+			} else {
+				res.status(200).json({
+					status: true,
+					status_code: 200,
+					data: [
+						{
+							is_sale: false,
+							sale_price: 0,
+							source_crawl: 'https://dautomall.com'
+						},
+						{
+							is_sale: false,
+							sale_price: 0,
+							source_crawl: 'https://www.djauto.co.kr'
+						}
+					],
+					message: req.__('Get list sale successfully')
 				});
 			}
 		} catch (error) {

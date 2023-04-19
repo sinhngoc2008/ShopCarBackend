@@ -1,10 +1,17 @@
+const { SOURCE_CRAWL } = require('../constants/enum');
 const { TYPE_PRICE_DISPLAY } = require('../constants/type');
-const { calPercentageSpecific, calculatePriceSpecific } = require('../helper/calculatePrice');
+const {
+	calPercentageSpecific,
+	calculatePriceSpecific,
+	calPriceBySaleProgram
+} = require('../helper/calculatePrice');
 const convertImageToLinkServer = require('../helper/dowloadImage');
 const take_decimal_number = require('../helper/floatNumberTwoCharacter');
 const generateUUID = require('../helper/generateUUID');
+const convertNameToModel = require('../helper/getNameModel');
 const htmlToPdf = require('../helper/htmlToPdf');
 const isNumberWithValue = require('../helper/isNumber');
+const optionsFilter = require('../helper/optionsFilter');
 const { pagination } = require('../helper/pagination');
 const { isArray } = require('../helper/validation');
 const CarModel = require('../model/CarModel');
@@ -16,13 +23,15 @@ class CarsController {
 	async saveCarCrawl(req, res) {
 		try {
 			const { data } = req.body;
-			let isSaleOn = await SaleModel.find();
+			let isSaleOn = await SaleModel.findOne({
+				source_crawl: 'https://www.djauto.co.kr'
+			});
 			let priceSale = 0;
-			if (isSaleOn.length === 0) {
+			if (!isSaleOn) {
 				priceSale = 0;
 			} else {
-				if (isSaleOn[0].is_sale) {
-					priceSale = isSaleOn[0].sale_price / 100;
+				if (isSaleOn.is_sale) {
+					priceSale = isSaleOn.sale_price / 100;
 				} else {
 					priceSale = 0;
 				}
@@ -33,11 +42,12 @@ class CarsController {
 					message: 'Data is required'
 				});
 			}
-			const hasCarDb = await CarModel.find({
-				car_code: data.basic_infor.car_code
+			const hasCarDb = await CarModel.findOne({
+				car_code: data.basic_infor.car_code.trim(),
+				car_name: data.basic_infor.car_name.trim()
 			});
 
-			if (hasCarDb.length === 0) {
+			if (!hasCarDb) {
 				let list_image_converted = [];
 				if (data.basic_infor.list_image.length > 0) {
 					for (let i = 0; i < data.basic_infor.list_image.length; i++) {
@@ -60,9 +70,10 @@ class CarsController {
 
 				const car = new CarModel({
 					images: list_image_converted,
-					car_name: data.basic_infor.car_name,
+					car_name: data.basic_infor.car_name.trim(),
+					car_model: convertNameToModel(data.basic_infor.car_name.trim()),
 					price: price_convert,
-					car_code: data.basic_infor.car_code,
+					car_code: data.basic_infor.car_code.trim(),
 					license_plate: data.basic_infor.license_plate,
 					year_manufacture: data.basic_infor.year_manufacture,
 					distance_driven: isNumberWithValue(
@@ -93,9 +104,11 @@ class CarsController {
 					safety: data.vehicle_detail.safety,
 					convenience: data.vehicle_detail.convenience,
 
-					performance_check: htmlPdf,
+					performance_check: [htmlPdf],
 
-					is_data_crawl: true
+					is_data_crawl: true,
+					// Add soruce crawl data
+					source_crawl: data.source_crawl
 				});
 				await car.save();
 				res.status(200).json({
@@ -108,9 +121,10 @@ class CarsController {
 				await CarModel.findOneAndUpdate(
 					{ car_code: data.basic_infor.car_code },
 					{
-						car_name: data.basic_infor.car_name,
+						car_name: data.basic_infor.car_name.trim(),
+						car_model: convertNameToModel(data.basic_infor.car_name.trim()),
 						price: price_convert,
-						car_code: data.basic_infor.car_code,
+						car_code: data.basic_infor.car_code.trim(),
 						license_plate: data.basic_infor.license_plate,
 						year_manufacture: data.basic_infor.year_manufacture,
 						distance_driven: isNumberWithValue(
@@ -150,6 +164,7 @@ class CarsController {
 				});
 			}
 		} catch (error) {
+			console.log(error);
 			res.status(500).json({
 				message: error.message,
 				status_code: 500,
@@ -161,115 +176,27 @@ class CarsController {
 	async getListCars(req, res) {
 		let { page, limit, filter, sort, search } = req.body;
 
-		let query = {};
-		let query_sort = {};
-
-		if (filter) {
-			const { from_year, to_year } = filter;
-
-			if (from_year && to_year) {
-				query.year_manufacture = {
-					$gte: from_year,
-					$lte: to_year
-				};
-			}
-
-			const { from_price, to_price } = filter;
-
-			if (typeof from_price === 'number' && typeof to_price === 'number') {
-				if (from_price > to_price) {
-					return res.status(200).json({
-						message: req.__('From price must be less than to price'),
-						error_code: 104
-					});
-				}
-				if (from_price || to_price) {
-					query.price = {
-						$gte: from_price || to_price
-					};
-				}
-				query.price = {
-					$gte: from_price,
-					$lte: to_price
-				};
-			}
-
-			const { from_distance, to_distance } = filter;
-
-			if (typeof from_distance === 'number' && typeof to_distance === 'number') {
-				if (from_distance > to_distance) {
-					return res.status(200).json({
-						message: req.__('From distance must be less than to distance'),
-						error_code: 104
-					});
-				}
-				if (from_distance || to_distance) {
-					query.distance_driven = {
-						$gte: from_distance || to_distance
-					};
-				}
-				query.distance_driven = {
-					$gte: from_distance,
-					$lte: to_distance
-				};
-			}
-
-			const { fuel_type } = filter;
-
-			if (fuel_type) {
-				query.fuel_type = fuel_type;
-			}
-
-			const { gearbox } = filter;
-
-			if (gearbox) {
-				query.gearbox = gearbox;
-			}
-
-			const { is_data_crawl } = filter;
-			if (typeof is_data_crawl === 'boolean') {
-				query.is_data_crawl = is_data_crawl;
-			}
-
-			const { category } = filter;
-			if (category) {
-				query.category = category;
-			}
-
-			const { color } = filter;
-			if (color) {
-				query.color = color;
-			}
-
-			const { is_hotsale } = filter;
-			if (typeof is_hotsale === 'boolean') {
-				query.is_hotsale = is_hotsale;
-			}
-		}
-
-		if (search) {
-			query.car_name = {
-				$regex: search,
-				$options: 'i'
-			};
-		}
-
-		console.log(query);
+		let query = optionsFilter(filter, search);
 
 		try {
-			const count = await CarModel.countDocuments(query);
+			const count = await CarModel.countDocuments({
+				...query,
+				source_crawl: 'https://dautomall.com'
+			});
 			let currentPage = parseInt(page) || 1;
 
 			let perPage = parseInt(limit) || 10;
 			let paginate = pagination(currentPage, perPage, count);
 
-			const cars = await CarModel.find(query)
+			const cars = await CarModel.find({
+				...query,
+				source_crawl: 'https://dautomall.com'
+			})
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })
 				.select(
-					'car_name price car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl'
+					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl'
 				)
-				.populate('category')
 				.limit(paginate.per_page)
 				.skip((paginate.current_page - 1) * paginate.per_page);
 
@@ -332,17 +259,10 @@ class CarsController {
 		try {
 			const { ids, is_hotsale, data_update } = req.body;
 			let dataIdUpdate = [];
-			let query = {};
+
 			if (data_update) {
 				const { search, filter } = data_update;
-				if (search) query.car_name = { $regex: search, $options: 'i' };
-				if (filter) {
-					query = {
-						...query,
-						...filter
-					};
-				}
-
+				let query = optionsFilter(filter, search);
 				const cars = await CarModel.find(query).select('_id').lean();
 				dataIdUpdate = cars.map(car => car._id);
 			} else {
@@ -390,17 +310,6 @@ class CarsController {
 
 	async updatePrice(req, res) {
 		try {
-			let isSaleOn = await SaleModel.find();
-			let priceSale = 0;
-			if (isSaleOn.length === 0) {
-				priceSale = 0;
-			} else {
-				if (isSaleOn[0].is_sale) {
-					priceSale = isSaleOn[0].sale_price / 100;
-				} else {
-					priceSale = 0;
-				}
-			}
 			const { type, percentage, price, ids, data_update } = req.body;
 
 			if (!Object.values(TYPE_PRICE_DISPLAY).includes(type)) {
@@ -411,7 +320,7 @@ class CarsController {
 			}
 
 			if (type === TYPE_PRICE_DISPLAY.PERCENTAGE) {
-				if (!percentage) {
+				if (percentage === '' || percentage === null || percentage === undefined) {
 					return res.status(200).json({
 						status_code: 101,
 						message: req.__('Vui lòng nhập phần % giá tiền')
@@ -422,101 +331,30 @@ class CarsController {
 			if (data_update && typeof data_update === 'object') {
 				const { filter, search } = data_update;
 
-				let query = {};
+				let query = optionsFilter(filter, search);
 
-				if (filter) {
-					const { from_year, to_year } = filter;
-
-					if (from_year && to_year) {
-						query.year_manufacture = {
-							$gte: from_year,
-							$lte: to_year
-						};
-					}
-
-					const { from_price, to_price } = filter;
-
-					if (typeof from_price === 'number' && typeof to_price === 'number') {
-						if (from_price > to_price) {
-							return res.status(200).json({
-								message: req.__('From price must be less than to price'),
-								error_code: 104
-							});
-						}
-						query.price = {
-							$gte: from_price,
-							$lte: to_price
-						};
-					}
-
-					const { from_distance, to_distance } = filter;
-
-					if (typeof from_distance === 'number' && typeof to_distance === 'number') {
-						if (from_distance > to_distance) {
-							return res.status(200).json({
-								message: req.__('From distance must be less than to distance'),
-								error_code: 104
-							});
-						}
-						query.distance_driven = {
-							$gte: from_distance,
-							$lte: to_distance
-						};
-					}
-
-					const { fuel_type } = filter;
-
-					if (fuel_type) {
-						query.fuel_type = fuel_type;
-					}
-
-					const { gearbox } = filter;
-
-					if (gearbox) {
-						query.gearbox = gearbox;
-					}
-
-					const { is_data_crawl } = filter;
-					if (typeof is_data_crawl === 'boolean') {
-						query.is_data_crawl = is_data_crawl;
-					}
-
-					const { category } = filter;
-					if (category) {
-						query.category = category;
-					}
-
-					const { color } = filter;
-					if (color) {
-						query.color = color;
-					}
-
-					const { is_hotsale } = filter;
-					if (typeof is_hotsale === 'boolean') {
-						query.is_hotsale = is_hotsale;
-					}
-				}
-
-				if (search) {
-					query.car_name = {
-						$regex: search,
-						$options: 'i'
-					};
-				}
-
-				const cars = await CarModel.find(query).select('_id price price_display');
+				const cars = await CarModel.find(query).select(
+					'_id price price_display source_crawl'
+				);
 
 				if (cars.length > 0) {
 					for (let carIndex = 0; carIndex < cars.length; carIndex++) {
-						let priceWillBeDisplay = isSaleOn[0].is_sale
-							? cars[carIndex].price_display
-							: cars[carIndex].price;
+						const isSaleOn = await SaleModel.findOne({
+							source_crawl: cars[carIndex].source_crawl
+						});
+						let priceSale = 0;
+						if (isSaleOn && isSaleOn.is_sale) {
+							priceSale = isSaleOn.sale_price;
+						}
+
+						let priceOrigin = cars[carIndex].price;
+
 						if (type === TYPE_PRICE_DISPLAY.PERCENTAGE) {
 							await CarModel.findByIdAndUpdate(cars[carIndex]._id, {
 								percentage: percentage,
 								price_display: calPercentageSpecific(
 									priceSale,
-									priceWillBeDisplay,
+									priceOrigin,
 									percentage
 								),
 								difference_price: 0
@@ -527,7 +365,7 @@ class CarsController {
 							await CarModel.findByIdAndUpdate(cars[carIndex]._id, {
 								price_display: calculatePriceSpecific(
 									priceSale,
-									priceWillBeDisplay,
+									priceOrigin,
 									price
 								),
 								difference_price: price,
@@ -557,28 +395,31 @@ class CarsController {
 						});
 					}
 
-					if (!Number(car.price)) {
-						return res.status(200).json({
-							message: req.__('Vui lòng lựa chọn xe khác với giá tiền là số'),
-							status_code: 100
-						});
+					const isSaleOn = await SaleModel.findOne({
+						source_crawl: car.source_crawl
+					});
+					let priceSale = 0;
+					if (isSaleOn && isSaleOn.is_sale) {
+						priceSale = isSaleOn.sale_price;
 					}
 
+					let priceOrigin = car.price;
+
 					if (type === TYPE_PRICE_DISPLAY.PERCENTAGE) {
-						await CarModel.findByIdAndUpdate(ids[i], {
+						await CarModel.findByIdAndUpdate(car._id, {
 							percentage: percentage,
-							price_display: take_decimal_number(
-								car.price * (1 + percentage / 100) + priceSale * car.price
+							price_display: calPercentageSpecific(
+								priceSale,
+								priceOrigin,
+								percentage
 							),
 							difference_price: 0
 						});
 					}
 
 					if (type === TYPE_PRICE_DISPLAY.PRICE) {
-						await CarModel.findByIdAndUpdate(ids[i], {
-							price_display: take_decimal_number(
-								Number(car.price) + price + priceSale * Number(car.price)
-							),
+						await CarModel.findByIdAndUpdate(car._id, {
+							price_display: calculatePriceSpecific(priceSale, priceOrigin, price),
 							difference_price: price,
 							percentage: 0
 						});
@@ -612,6 +453,7 @@ class CarsController {
 
 			let {
 				car_name,
+				car_model,
 				price,
 				car_code,
 				license_plate,
@@ -645,6 +487,14 @@ class CarsController {
 			if (!car_name) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập tên xe'),
+					status_code: 101,
+					status: false
+				});
+			}
+
+			if (!car_model) {
+				return res.status(200).json({
+					message: req.__('Vui lòng chọn loại xe'),
 					status_code: 101,
 					status: false
 				});
@@ -734,18 +584,10 @@ class CarsController {
 				});
 			}
 
-			if (!performance_check) {
+			if (!isArray(performance_check)) {
 				return res.status(200).json({
-					message: req.__('Vui lòng nhập thông số kỹ thuật'),
-					status_code: 101,
-					status: false
-				});
-			}
-
-			if (!phone_contact) {
-				return res.status(200).json({
-					message: req.__('Vui lòng nhập số điện thoại liên hệ'),
-					status_code: 101,
+					message: req.__('Loại dữ liệu kiểm tra hiệu suất nhập vào không đúng'),
+					status_code: 104,
 					status: false
 				});
 			}
@@ -814,11 +656,23 @@ class CarsController {
 				});
 			}
 
-			const hasCar = await CarModel.findOne({
+			const hasCarByCarCode = await CarModel.findOne({
 				car_code: car_code
 			});
 
-			if (hasCar) {
+			if (hasCarByCarCode) {
+				return res.status(200).json({
+					message: req.__('Mã xe đã tồn tại'),
+					status_code: 102,
+					status: false
+				});
+			}
+
+			const hasCarByLicensePlate = await CarModel.findOne({
+				license_plate
+			});
+
+			if (hasCarByLicensePlate) {
 				return res.status(200).json({
 					message: req.__('Mã xe đã tồn tại'),
 					status_code: 102,
@@ -891,6 +745,7 @@ class CarsController {
 			let {
 				car_id,
 				car_name,
+				car_model,
 				price,
 				license_plate,
 				year_manufacture,
@@ -933,6 +788,14 @@ class CarsController {
 			if (!car_name) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập tên xe'),
+					status_code: 101,
+					status: false
+				});
+			}
+
+			if (!car_model) {
+				return res.status(200).json({
+					message: req.__('Vui lòng chọn loại xe'),
 					status_code: 101,
 					status: false
 				});
@@ -1018,18 +881,10 @@ class CarsController {
 				});
 			}
 
-			if (!performance_check) {
+			if (isArray(performance_check)) {
 				return res.status(200).json({
-					message: req.__('Vui lòng nhập thông số kỹ thuật'),
-					status_code: 101,
-					status: false
-				});
-			}
-
-			if (!phone_contact) {
-				return res.status(200).json({
-					message: req.__('Vui lòng nhập số điện thoại liên hệ'),
-					status_code: 101,
+					message: req.__('Loại dữ liệu kiểm tra hiệu suất nhập vào không đúng'),
+					status_code: 104,
 					status: false
 				});
 			}
@@ -1148,16 +1003,9 @@ class CarsController {
 		try {
 			const { ids, data_update } = req.body;
 			let dataIdsUpdate = [];
-			let query = {};
 			if (data_update) {
 				const { search, filter } = data_update;
-				if (search) query.car_name = { $regex: search, $options: 'i' };
-				if (filter) {
-					query = {
-						...query,
-						...filter
-					};
-				}
+				let query = optionsFilter(filter, search);
 
 				const cars = await CarModel.find(query).select('_id').lean();
 				dataIdsUpdate = cars.map(car => car._id);
@@ -1191,7 +1039,7 @@ class CarsController {
 				}
 			}
 
-			await CarModel.deleteMany({ _id: { $in: ids } });
+			await CarModel.deleteMany({ _id: { $in: dataIdsUpdate } });
 
 			return res.status(200).json({
 				message: req.__('Delete cars successfully'),

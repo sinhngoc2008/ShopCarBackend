@@ -62,7 +62,7 @@ const UserSchema = new mongoose.Schema(
 			trim: true,
 			default: ''
 		},
-		link_twitter: {
+		link_kakao: {
 			type: String,
 			trim: true,
 			default: ''

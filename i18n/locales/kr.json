@@ -76,5 +76,6 @@
 	"UPDATE_INSURANCE_SUCCESS": "보험 업데이트 성공",
 	"Cập nhật thông tin xe thành công": "차량 정보 업데이트 완료",
 	"From distance must be less than to distance": "에서의 거리는 까지의 거리보다 작아야 합니다.",
-	"From price must be less than to price": "의 가격은 까지의 가격보다 낮아야 합니다."
+	"From price must be less than to price": "의 가격은 까지의 가격보다 낮아야 합니다.",
+	"Loại dữ liệu kiểm tra hiệu suất nhập vào không đúng": "입력 된 성능 검사 유형이 잘못되었습니다."
 }

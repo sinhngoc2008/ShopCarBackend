@@ -1,9 +1,11 @@
 const CarListController = require('../../../../controller/CarListController');
+const SaveDautomallController = require('../../../../controller/Cars/SaveDautomallController');
 
 const routerCars = require('express').Router();
 const requireLogin = require('../../../../middleware/requireLogin');
 
 routerCars.post('/save', CarListController.saveCarCrawl);
+routerCars.post('/save-dautomall', SaveDautomallController);
 routerCars.post('/list', CarListController.getListCars);
 routerCars.get('/list/hotsale', CarListController.getListHotsale);
 routerCars.post('/detail', CarListController.getCarDetail);

@@ -17,6 +17,11 @@ const CarSchema = new mongoose.Schema(
 			trim: true,
 			default: ''
 		},
+		car_model: {
+			type: String,
+			trim: true,
+			default: ''
+		},
 		license_plate: {
 			type: String,
 			trim: true,
@@ -148,9 +153,8 @@ const CarSchema = new mongoose.Schema(
 		},
 
 		performance_check: {
-			type: String,
-			trim: true,
-			default: ''
+			type: Array,
+			default: []
 		},
 
 		is_deleted: {
@@ -179,6 +183,13 @@ const CarSchema = new mongoose.Schema(
 		is_data_crawl: {
 			type: Boolean,
 			default: false
+		},
+
+		source_crawl: {
+			type: String,
+			trim: true,
+			default: 'manual',
+			enum: ['https://dautomall.com', 'https://www.djauto.co.kr', 'manual']
 		}
 	},
 	{

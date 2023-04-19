@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { SOURCE_CRAWL } = require('../constants/enum');
 
 const SaleSchema = new mongoose.Schema(
 	{
@@ -9,6 +10,10 @@ const SaleSchema = new mongoose.Schema(
 		sale_price: {
 			type: Number,
 			default: 0
+		},
+		source_crawl: {
+			type: String,
+			enum: SOURCE_CRAWL
 		}
 	},
 	{
