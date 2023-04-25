@@ -151,7 +151,7 @@ module.exports = (filter, search) => {
 		};
 	}
 
-	if(!filter.source_crawl) {
+	if(!filter || !filter?.source_crawl) {
 		query = {
 			...query,
 			source_crawl: "https://dautomall.com"
