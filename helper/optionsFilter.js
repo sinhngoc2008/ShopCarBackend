@@ -132,8 +132,8 @@ module.exports = (filter, search) => {
 		const { source_crawl } = filter;
 		if (source_crawl && SOURCE_CRAWL.includes(source_crawl)) {
 			let src_crawl = source_crawl;
-			if(source_crawl === "https://www.djauto.co.kr") {
-				src_crawl = "https://dautomall.com";
+			if (source_crawl === 'https://www.djauto.co.kr') {
+				src_crawl = 'https://dautomall.com';
 			}
 			query = {
 				...query,
@@ -151,11 +151,13 @@ module.exports = (filter, search) => {
 		};
 	}
 
-	if(!filter || !filter?.source_crawl) {
+	if (filter && filter?.source_crawl) {
 		query = {
 			...query,
-			source_crawl: "https://dautomall.com"
-		}
+			source_crawl: {
+				$in: ['manual', 'https://dautomall.com']
+			}
+		};
 	}
 	return query;
 };

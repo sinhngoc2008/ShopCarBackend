@@ -14,9 +14,14 @@ connectToDB()
 
 unlinkFileInServer = async () => {
 	try {
+		console.log("====================================");
+		console.log("Đang lấy danh sách xe");
 		const listCarDjauto = await CarModel.find({
 			source_crawl: 'https://www.djauto.co.kr'
 		});
+		console.log(listCarDjauto.length);
+		console.log("====================================");
+		console.log("Đang xóa danh sách xe", listCarDjauto.length);
 
 		if (listCarDjauto.length > 0) {
 			for (let car of listCarDjauto) {
