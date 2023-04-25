@@ -181,7 +181,6 @@ class CarsController {
 		try {
 			const count = await CarModel.countDocuments({
 				...query,
-				source_crawl: 'https://dautomall.com'
 			});
 			let currentPage = parseInt(page) || 1;
 
@@ -190,7 +189,6 @@ class CarsController {
 
 			const cars = await CarModel.find({
 				...query,
-				source_crawl: 'https://dautomall.com'
 			})
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })

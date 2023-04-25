@@ -131,6 +131,10 @@ module.exports = (filter, search) => {
 
 		const { source_crawl } = filter;
 		if (source_crawl && SOURCE_CRAWL.includes(source_crawl)) {
+			let src_crawl = source_crawl;
+			if(source_crawl === "https://www.djauto.co.kr") {
+				src_crawl = "https://dautomall.com";
+			}
 			query = {
 				...query,
 				source_crawl
@@ -147,5 +151,11 @@ module.exports = (filter, search) => {
 		};
 	}
 
+	if(!filter.source_crawl) {
+		query = {
+			...query,
+			source_crawl: "https://dautomall.com"
+		}
+	}
 	return query;
 };

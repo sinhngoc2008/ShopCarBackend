@@ -3,7 +3,15 @@ const CategoryModel = require('../model/Category');
 class FilterListController {
 	async get_distance_driven(req, res) {
 		try {
-			const list = await CarModel.find()
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
 				.select('distance_driven')
 				.sort({ distance_driven: 1 });
 			let list_distance_driven = [];
@@ -33,7 +41,17 @@ class FilterListController {
 
 	async get_fuel_type(req, res) {
 		try {
-			const list = await CarModel.find().select('fuel_type').sort({ fuel_type: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('fuel_type')
+				.sort({ fuel_type: 1 });
 			let list_fuel_type = [];
 			list.forEach(item => {
 				list_fuel_type.push(item.fuel_type);
@@ -60,7 +78,17 @@ class FilterListController {
 
 	async get_gear_box(req, res) {
 		try {
-			const list = await CarModel.find().select('gearbox').sort({ gearbox: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('gearbox')
+				.sort({ gearbox: 1 });
 			let list_gear_box = [];
 			list.forEach(item => {
 				list_gear_box.push(item.gearbox);
@@ -87,7 +115,17 @@ class FilterListController {
 
 	async get_color(req, res) {
 		try {
-			const list = await CarModel.find().select('color').sort({ color: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('color')
+				.sort({ color: 1 });
 			let list_color = [];
 			list.forEach(item => {
 				if (item.color && item.color !== '') {
@@ -116,7 +154,17 @@ class FilterListController {
 
 	async get_category(req, res) {
 		try {
-			const list = await CarModel.find().select('category').sort({ category: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('category')
+				.sort({ category: 1 });
 			let list_category = [];
 			list.forEach(item => {
 				if (item.category && item.category !== '') {
@@ -168,7 +216,17 @@ class FilterListController {
 
 	async get_car_type(req, res) {
 		try {
-			const list = await CarModel.find().select('car_type').sort({ car_type: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('car_type')
+				.sort({ car_type: 1 });
 			let list_car_type = [];
 			list.forEach(item => {
 				if (item.car_type && item.car_type !== '') {
@@ -197,7 +255,17 @@ class FilterListController {
 
 	async get_price(req, res) {
 		try {
-			const list = await CarModel.find().select('price').sort({ price: 1 });
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			})
+				.select('price')
+				.sort({ price: 1 });
 			let list_price = [];
 			list.forEach(item => {
 				if (item.price && item.price !== '') {
@@ -226,7 +294,15 @@ class FilterListController {
 
 	async get_model(req, res) {
 		try {
-			const list = await CarModel.find().select('category');
+			const list = await CarModel.find({
+				$or: [
+					{
+						source_crawl: {
+							$in: ['https://dautomall.com', 'manual']
+						}
+					}
+				]
+			}).select('category');
 			let list_category = [];
 			list.forEach(item => {
 				if (item.category && item.category !== '') {
