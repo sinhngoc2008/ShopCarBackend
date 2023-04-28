@@ -1,3 +1,4 @@
+const ListCategoryController = require('../../../../controller/Category/ListCategoryController');
 const FilterListController = require('../../../../controller/FilterListController');
 
 const router = require('express').Router();
@@ -10,5 +11,6 @@ router.get('/category', FilterListController.get_category);
 router.get('/cartype', FilterListController.get_car_type);
 router.get('/price', FilterListController.get_price);
 router.get('/model', FilterListController.get_model);
+router.get('/list-category', ListCategoryController);
 
 module.exports = router;
