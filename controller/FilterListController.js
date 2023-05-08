@@ -53,6 +53,7 @@ class FilterListController {
 				.select('fuel_type')
 				.sort({ fuel_type: 1 });
 			let list_fuel_type = [];
+			
 			list.forEach(item => {
 				list_fuel_type.push(item.fuel_type);
 			});

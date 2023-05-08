@@ -140,6 +140,67 @@ module.exports = (filter, search) => {
 				source_crawl
 			};
 		}
+
+		const { category_name, rating, model_name, detail_name } = filter;
+		if (category_name) {
+			query = {
+				...query,
+				$or: [
+					{ other_infor: { $regex: category_name, $options: 'i' } },
+					{ model_name: { $regex: category_name, $options: 'i' } },
+					{ car_name: { $regex: category_name, $options: 'i' } },
+					{ category_name: { $regex: category_name, $options: 'i' } }
+				]
+			};
+			if (model_name) {
+				const { $or, ...rest } = query;
+				query = {
+					...rest,
+					$and: [
+						{
+							$or: [
+								{ car_name: { $regex: category_name, $options: 'i' } },
+								{ category_name: { $regex: category_name, $options: 'i' } }
+							]
+						},
+						{
+							$or: [
+								{ other_infor: { $regex: model_name, $options: 'i' } },
+								{ model_name: { $regex: model_name, $options: 'i' } }
+							]
+						}
+					]
+				};
+
+				if (detail_name) {
+					const { $and, ...rest } = query;
+					query = {
+						...rest,
+						$and: [
+							...$and,
+							{
+								detail_name
+							}
+						]
+					};
+					if (rating) {
+						const { $and, ...rest } = query;
+						query = {
+							...rest,
+							$and: [
+								...$and,
+								{
+									rating: {
+										$regex: rating,
+										$options: 'i'
+									}
+								}
+							]
+						};
+					}
+				}
+			}
+		}
 	}
 	if (search) {
 		query = {

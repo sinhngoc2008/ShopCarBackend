@@ -61,7 +61,12 @@ module.exports = async (req, res) => {
 				performance_check: [performance_check],
 
 				is_data_crawl: true,
-				source_crawl: data?.source_crawl || 'https://dautomall.com'
+				source_crawl: data?.source_crawl || 'https://dautomall.com',
+				rating: data?.rating,
+				category_name: data?.category_name,
+				model_name: data?.model_name,
+				detail_name: data?.detail_name,
+				other_infor: data?.other_infor,
 			});
 
 			await car.save();
@@ -90,7 +95,12 @@ module.exports = async (req, res) => {
 					exterior: [],
 					guts: [],
 					safety: [],
-					convenience: data.convenience_infr
+					convenience: data.convenience_infr,
+					rating: data?.rating,
+					category_name: data?.category_name,
+					model_name: data?.model_name,
+					detail_name: data?.detail_name,
+					other_infor: data?.other_infor,
 				}
 			);
 
@@ -99,11 +109,12 @@ module.exports = async (req, res) => {
 			});
 		}
 	} catch (error) {
-		await sendEmail({
-			subject: ' BE SAVE DATA',
-			html: `Lỗi - ${error}`,
-			email: 'vuducviet0131@gmail.com, thangld2407@gmail.com'
-		});
+		// await sendEmail({
+		// 	subject: ' BE SAVE DATA',
+		// 	html: `Lỗi - ${error}`,
+		// 	email: 'vuducviet0131@gmail.com, thangld2407@gmail.com'
+		// });
+		console.log(error.message);
 		res.status(200).json({
 			message: error.message,
 			status_code: 500,

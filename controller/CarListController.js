@@ -17,6 +17,7 @@ const { isArray } = require('../helper/validation');
 const CarModel = require('../model/CarModel');
 const CarTypeModel = require('../model/Category');
 const SaleModel = require('../model/SaleModel');
+const CategoryCarsModel = require('../model/CategoryCarModel');
 
 CarModel.createIndexes({ _id: 1 });
 class CarsController {
@@ -180,7 +181,7 @@ class CarsController {
 
 		try {
 			const count = await CarModel.countDocuments({
-				...query,
+				...query
 			});
 			let currentPage = parseInt(page) || 1;
 
@@ -188,12 +189,12 @@ class CarsController {
 			let paginate = pagination(currentPage, perPage, count);
 
 			const cars = await CarModel.find({
-				...query,
+				...query
 			})
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })
 				.select(
-					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl'
+					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl category_name model_name detail_name rating other_infor '
 				)
 				.limit(paginate.per_page)
 				.skip((paginate.current_page - 1) * paginate.per_page);
@@ -461,7 +462,6 @@ class CarsController {
 				cylinder_capacity,
 				color,
 				gearbox,
-				category,
 				performance_check,
 				phone_contact,
 				images,
@@ -479,8 +479,14 @@ class CarsController {
 				affiliated_company,
 				business_address,
 				parking_location,
-				primary_image
+				primary_image,
+				category_id,
+				model_name,
+				detail_name,
+				rating
 			} = req.body;
+
+			console.log(category_id, model_name, detail_name, rating);
 
 			if (!car_name) {
 				return res.status(200).json({
@@ -574,7 +580,7 @@ class CarsController {
 				});
 			}
 
-			if (!category) {
+			if (!category_id) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập danh mục xe'),
 					status_code: 101,
@@ -678,6 +684,17 @@ class CarsController {
 				});
 			}
 
+			const isCategory = await CategoryCarsModel.findById(category_id);
+			if (!isCategory) {
+				return res.status(200).json({
+					message: req.__('Danh mục xe không tồn tại'),
+					status_code: 102,
+					status: false
+				});
+			}
+		
+			// update category car if new detail car
+
 			const newCar = new CarModel({
 				car_name,
 				price,
@@ -689,7 +706,6 @@ class CarsController {
 				cylinder_capacity,
 				color,
 				gearbox,
-				category,
 				performance_check,
 				phone_contact,
 				images,
@@ -708,7 +724,12 @@ class CarsController {
 				business_address,
 				parking_location,
 				primary_image,
-				price_display: take_decimal_number(price + priceSale * price)
+				price_display: take_decimal_number(price + priceSale * price),
+				category_name: isCategory.category_name,
+				category: isCategory.category_name,
+				model_name,
+				detail_name,
+				rating
 			});
 
 			await newCar.save();
@@ -752,7 +773,6 @@ class CarsController {
 				cylinder_capacity,
 				color,
 				gearbox,
-				category,
 				performance_check,
 				phone_contact,
 				images,
@@ -770,7 +790,11 @@ class CarsController {
 				affiliated_company,
 				business_address,
 				parking_location,
-				primary_image
+				primary_image,
+				category_id,
+				model_name,
+				detail_name,
+				rating
 			} = req.body;
 
 			const hasCar = await CarModel.findOne({ _id: car_id, is_data_crawl: false }).lean();
@@ -871,7 +895,7 @@ class CarsController {
 				});
 			}
 
-			if (!category) {
+			if (!category_id) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập danh mục xe'),
 					status_code: 101,
@@ -951,6 +975,14 @@ class CarsController {
 				});
 			}
 
+			const isCategory = await CategoryCarsModel.findById(category_id);
+			if (!isCategory) {
+				return res.status(200).json({
+					message: req.__('Danh mục xe không tồn tại'),
+					status_code: 102,
+					status: false
+				});
+			}
 			await CarModel.findByIdAndUpdate(hasCar._id, {
 				car_name,
 				price,
@@ -961,7 +993,6 @@ class CarsController {
 				cylinder_capacity,
 				color,
 				gearbox,
-				category,
 				performance_check,
 				phone_contact,
 				images,
@@ -980,7 +1011,12 @@ class CarsController {
 				business_address,
 				parking_location,
 				primary_image,
-				price_display: take_decimal_number(price + price * priceSale)
+				price_display: take_decimal_number(price + price * priceSale),
+				category_name: isCategory.category_name,
+				category: isCategory.category_name,
+				model_name,
+				detail_name,
+				rating
 			}).lean();
 
 			return res.status(200).json({

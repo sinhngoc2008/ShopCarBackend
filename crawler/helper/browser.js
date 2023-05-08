@@ -5,7 +5,7 @@ async function startBrowser() {
   try {
     console.log("Đang khởi tạo trình duyệt");
     browser = await puppeteer.launch({
-      headless: false,
+      headless: process.env.NODE_ENV === "production" ? true : false,
       args: ['--no-sandbox', "--disabled-setupid-sandbox"],
       ignoreHTTPSErrors: true,
     });

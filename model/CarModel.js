@@ -190,6 +190,31 @@ const CarSchema = new mongoose.Schema(
 			trim: true,
 			default: 'manual',
 			enum: ['https://dautomall.com', 'https://www.djauto.co.kr', 'manual']
+		},
+		rating: {
+			type: String,
+			default: '',
+			trim: true
+		},
+		category_name: {
+			type: String,
+			default: '',
+			trim: true
+		},
+		model_name: {
+			type: String,
+			trim: true,
+			default: ''
+		},
+		detail_name: {
+			type: String,
+			trim: true,
+			default: ''
+		},
+		other_infor: {
+			type: String,
+			trim: true,
+			default: ''
 		}
 	},
 	{

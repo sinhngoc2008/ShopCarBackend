@@ -1,11 +1,15 @@
 const { connectToDB } = require('../utils/db');
 const crawlCategory = require('./crawlCategory');
+const crawlCars = require('./crawlCars');
 
-connectToDB()
-	.then(async _ => {
-		console.log('Mongo is running');
-    await crawlCategory();
-	})
-	.catch(err => {
-		console.log(err);
-	});
+const startCrawler = async () => {
+	try {
+		await connectToDB();
+		await crawlCategory();
+		// await crawlCars();
+	} catch (error) {
+		console.log(error);
+	}
+};
+
+startCrawler();

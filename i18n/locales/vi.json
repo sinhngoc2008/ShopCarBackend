@@ -93,5 +93,10 @@
 	"Get list model success": "Get list model success",
 	"Get list sale successfully": "Get list sale successfully",
 	"Get sale successfully": "Get sale successfully",
-	"Vui lòng nhập phần % giá tiền": "Vui lòng nhập phần % giá tiền"
+	"Vui lòng nhập phần % giá tiền": "Vui lòng nhập phần % giá tiền",
+	"Create category success": "Create category success",
+	"Category already exists": "Category already exists",
+	"Category not found": "Category not found",
+	"Delete category success": "Delete category success",
+	"Category has car": "Category has car"
 }

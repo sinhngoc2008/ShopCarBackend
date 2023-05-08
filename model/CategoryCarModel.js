@@ -9,13 +9,30 @@ const CategoryCarsModel = new mongoose.Schema(
 		category_detail: {
 			type: Array,
 			trim: true,
-			default: []
+			default: [
+				{
+					model_name: '',
+					model_detail: [
+						{
+							detail_name: '',
+							rating: []
+						}
+					]
+				}
+			]
 		},
 		image: {
 			type: String,
-			trim: true
+			trim: true,
+			default: `/assets/images/noimage.png`
 		}
 	},
+	{
+		timestamps: {
+			createdAt: 'created_at',
+			updatedAt: 'updated_at'
+		}
+	}
 );
 
 module.exports = mongoose.model('CategoryCars', CategoryCarsModel);
