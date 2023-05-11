@@ -1,9 +1,13 @@
-const checkArray = require('../../helper/checkArray');
 const CategoryCarsModel = require('../../model/CategoryCarModel');
-
-module.exports = async (req, res) => {
-	const { category_id, category_name, category_detail, image } = req.body;
+export default async function (req, res) {
 	try {
+		const { category_id } = req.body;
+		if (!category_id)
+			return res.status(200).json({
+				message: req.__('Category not found'),
+				status_code: 101,
+				status: false
+			});
 		const category = await CategoryCarsModel.findOne({
 			category_id
 		});
@@ -15,16 +19,9 @@ module.exports = async (req, res) => {
 			});
 		}
 
-		const dataUpdate = {
-			category_name,
-			category_detail,
-			image
-		};
-
-		await CategoryCarsModel.updateOne({ _id: category_id }, dataUpdate);
-
 		res.status(200).json({
-			message: req.__('Update category success'),
+			message: 'Lấy chi tiết thành công',
+			data: category,
 			status_code: 200,
 			status: true
 		});
@@ -36,4 +33,4 @@ module.exports = async (req, res) => {
 			error_message: error.message
 		});
 	}
-};
+}

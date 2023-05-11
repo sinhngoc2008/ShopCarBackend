@@ -31,27 +31,37 @@ module.exports = async () => {
 						const listModel = document.querySelectorAll('#mCSB_9_container > li');
 						listModel.length > 0 &&
 							listModel.forEach(itemModel => {
-								const model_name = itemModel.querySelector('span>label')?.innerText?.trim();
+								const model_name = itemModel
+									.querySelector('span>label')
+									?.innerText?.trim();
 								const modelDetail = [];
 
 								itemModel.addEventListener('click', () => {
-									const listDetail = document.querySelectorAll('#mCSB_10_container > li');
+									const listDetail =
+										document.querySelectorAll('#mCSB_10_container > li');
 									listDetail.length > 0 &&
 										listDetail.forEach(itemDetail => {
-											const model_rating = []
-											const detail_name = itemDetail.querySelector('span>label')?.innerText?.trim();
-											
+											const model_rating = [];
+											const detail_name = itemDetail
+												.querySelector('span>label')
+												?.innerText?.trim();
+
 											itemDetail.addEventListener('click', () => {
-												const listRating = document.querySelectorAll('#mCSB_11_container > li');
+												const listRating =
+													document.querySelectorAll(
+														'#mCSB_11_container > li'
+													);
 												listRating.length > 0 &&
 													listRating.forEach(itemRating => {
-														const rating_name = itemRating.querySelector('span>label')?.innerText?.trim();
-														model_rating.push(rating_name)
+														const rating_name = itemRating
+															.querySelector('span>label')
+															?.innerText?.trim();
+														model_rating.push(rating_name);
 													});
 												modelDetail.push({
 													detail_name,
 													rating: model_rating
-												})
+												});
 											});
 											itemDetail.click();
 										});
@@ -75,7 +85,7 @@ module.exports = async () => {
 			return listCate;
 		});
 		console.log('=============ĐÃ LẤY ĐƯỢC DỮ LIỆU CATEGORY=======================');
-		
+
 		const formatListCategory = listCategory.map(item => {
 			return {
 				category_name: item.cate_name,
@@ -90,7 +100,7 @@ module.exports = async () => {
 				category_name: item.category_name
 			});
 			if (checkExist) {
-				await CategoryCarsModel.updateOne(
+				await CategoryCarsModel.findOneAndUpdate(
 					{
 						category_name: item.category_name
 					},
