@@ -194,7 +194,7 @@ class CarsController {
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })
 				.select(
-					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl category_name model_name detail_name rating other_infor '
+					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl distance_driven category_name model_name detail_name rating other_infor '
 				)
 				.limit(paginate.per_page)
 				.skip((paginate.current_page - 1) * paginate.per_page);
@@ -483,10 +483,9 @@ class CarsController {
 				category_id,
 				model_name,
 				detail_name,
-				rating
+				rating,
+				category_name
 			} = req.body;
-
-			console.log(category_id, model_name, detail_name, rating);
 
 			if (!car_name) {
 				return res.status(200).json({
@@ -580,7 +579,7 @@ class CarsController {
 				});
 			}
 
-			if (!category_id) {
+			if (!category_name) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập danh mục xe'),
 					status_code: 101,
@@ -684,7 +683,9 @@ class CarsController {
 				});
 			}
 
-			const isCategory = await CategoryCarsModel.findById(category_id);
+			const isCategory = await CategoryCarsModel.findOne({
+				category_name: category_name
+			});
 			if (!isCategory) {
 				return res.status(200).json({
 					message: req.__('Danh mục xe không tồn tại'),
@@ -692,7 +693,7 @@ class CarsController {
 					status: false
 				});
 			}
-		
+
 			// update category car if new detail car
 
 			const newCar = new CarModel({
@@ -725,8 +726,8 @@ class CarsController {
 				parking_location,
 				primary_image,
 				price_display: take_decimal_number(price + priceSale * price),
-				category_name: isCategory.category_name,
-				category: isCategory.category_name,
+				category_name: category_name,
+				category: category_name,
 				model_name,
 				detail_name,
 				rating
@@ -791,7 +792,7 @@ class CarsController {
 				business_address,
 				parking_location,
 				primary_image,
-				category_id,
+				category_name,
 				model_name,
 				detail_name,
 				rating
@@ -895,7 +896,7 @@ class CarsController {
 				});
 			}
 
-			if (!category_id) {
+			if (!category_name) {
 				return res.status(200).json({
 					message: req.__('Vui lòng nhập danh mục xe'),
 					status_code: 101,
@@ -975,7 +976,9 @@ class CarsController {
 				});
 			}
 
-			const isCategory = await CategoryCarsModel.findById(category_id);
+			const isCategory = await CategoryCarsModel.findOne({
+				category_name
+			});
 			if (!isCategory) {
 				return res.status(200).json({
 					message: req.__('Danh mục xe không tồn tại'),
@@ -1012,8 +1015,8 @@ class CarsController {
 				parking_location,
 				primary_image,
 				price_display: take_decimal_number(price + price * priceSale),
-				category_name: isCategory.category_name,
-				category: isCategory.category_name,
+				category_name: category_name,
+				category: category_name,
 				model_name,
 				detail_name,
 				rating
