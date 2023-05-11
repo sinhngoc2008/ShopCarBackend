@@ -1,5 +1,5 @@
 const CategoryCarsModel = require('../../model/CategoryCarModel');
-export default async function (req, res) {
+module.exports = async function (req, res) {
 	try {
 		const { category_id } = req.body;
 		if (!category_id)
@@ -33,4 +33,4 @@ export default async function (req, res) {
 			error_message: error.message
 		});
 	}
-}
+};

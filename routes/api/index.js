@@ -1,3 +1,5 @@
+const SetStatus = require('../../controller/ProcessCrawl/SetStatus');
+const StatusController = require('../../controller/ProcessCrawl/StatusController');
 const requireLogin = require('../../middleware/requireLogin');
 
 const routerApi = require('express').Router();
@@ -20,5 +22,7 @@ routerApi.use('/file', requireLogin, require('./module/file'));
 routerApi.use('/policy', require('./module/policy'));
 routerApi.use('/insurance', require('./module/insurance'));
 routerApi.use('/sale', require('./module/sale'));
+routerApi.get('/process/status', StatusController);
+routerApi.post('/process/set-status', SetStatus);
 
 module.exports = routerApi;
