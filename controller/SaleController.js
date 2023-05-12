@@ -145,67 +145,21 @@ class SaleController {
 
 	async getListSale(req, res) {
 		try {
-			const sales = await SaleModel.find();
-			if (sales.length > 0) {
-				let sale = [];
-				if (sales.length === 1) {
-					const _sale = sales[0];
-					if (_sale.source_crawl === 'https://dautomall.com') {
-						sale = [
-							{
-								is_sale: _sale.is_sale,
-								sale_price: _sale.sale_price,
-								source_crawl: _sale.source_crawl
-							},
-							{
-								is_sale: false,
-								sale_price: 0,
-								source_crawl: 'https://www.djauto.co.kr'
-							}
-						];
-					}
+			const sales = await SaleModel.findOne({
+				source_crawl: 'https://dautomall.com'
+			});
 
-					if (_sale.source_crawl === 'https://www.djauto.co.kr') {
-						sale = [
-							{
-								is_sale: false,
-								sale_price: 0,
-								source_crawl: 'https://dautomall.com'
-							},
-							{
-								is_sale: _sale.is_sale,
-								sale_price: _sale.sale_price,
-								source_crawl: _sale.source_crawl
-							}
-						];
-					}
-				} else {
-					sale = sales;
-				}
-
-				res.status(200).json({
-					status: true,
-					status_code: 200,
-					data: sale,
-					message: req.__('Get list sale successfully')
+			if (!sales) {
+				return res.status(200).json({
+					is_sale: false,
+					sale_price: 0,
+					source_crawl: 'https://dautomall.com'
 				});
 			} else {
-				res.status(200).json({
-					status: true,
-					status_code: 200,
-					data: [
-						{
-							is_sale: false,
-							sale_price: 0,
-							source_crawl: 'https://dautomall.com'
-						},
-						{
-							is_sale: false,
-							sale_price: 0,
-							source_crawl: 'https://www.djauto.co.kr'
-						}
-					],
-					message: req.__('Get list sale successfully')
+				return res.status(200).json({
+					is_sale: sales.is_sale,
+					sale_price: sales.sale_price,
+					source_crawl: 'https://dautomall.com'
 				});
 			}
 		} catch (error) {
