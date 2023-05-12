@@ -150,21 +150,29 @@ class SaleController {
 			});
 
 			if (!sales) {
-				return res.status(200).json([
-					{
-						is_sale: false,
-						sale_price: 0,
-						source_crawl: 'https://dautomall.com'
-					}
-				]);
+				return res.status(200).json({
+					status: true,
+					status_code: 200,
+					data: [
+						{
+							is_sale: false,
+							sale_price: 0,
+							source_crawl: 'https://dautomall.com'
+						}
+					]
+				});
 			} else {
-				return res.status(200).json([
-					{
-						is_sale: sales.is_sale,
-						sale_price: sales.sale_price,
-						source_crawl: 'https://dautomall.com'
-					}
-				]);
+				return res.status(200).json({
+					status: true,
+					status_code: 200,
+					data: [
+						{
+							is_sale: sales.is_sale,
+							sale_price: sales.sale_price,
+							source_crawl: 'https://dautomall.com'
+						}
+					]
+				});
 			}
 		} catch (error) {
 			res.status(500).json({
