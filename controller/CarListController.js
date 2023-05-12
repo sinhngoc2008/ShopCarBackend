@@ -520,7 +520,7 @@ class CarsController {
 			}
 
 			if (!car_code) {
-				car_code = generateUUID();
+				car_code = `Car-${new Date().getSeconds()}${generateUUID()}`;
 			}
 
 			if (!license_plate) {
@@ -904,7 +904,7 @@ class CarsController {
 				});
 			}
 
-			if (isArray(performance_check)) {
+			if (!isArray(performance_check)) {
 				return res.status(200).json({
 					message: req.__('Loại dữ liệu kiểm tra hiệu suất nhập vào không đúng'),
 					status_code: 104,
