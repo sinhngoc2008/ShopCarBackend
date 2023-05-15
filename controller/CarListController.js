@@ -177,7 +177,7 @@ class CarsController {
 	async getListCars(req, res) {
 		let { page, limit, filter, sort, search } = req.body;
 
-		let query = optionsFilter(filter, search);
+		let query = await optionsFilter(filter, search);
 
 		try {
 			const count = await CarModel.countDocuments({
@@ -193,9 +193,6 @@ class CarsController {
 			})
 				.sort(sort)
 				.collation({ locale: 'en_US', numericOrdering: true })
-				.select(
-					'car_name car_model price license_plate car_code _id primary_image year_manufacture is_hotsale  price_display percentage created_at updated_at color car_type category fuel_type cylinder_capacity is_data_crawl distance_driven category_name model_name detail_name rating other_infor '
-				)
 				.limit(paginate.per_page)
 				.skip((paginate.current_page - 1) * paginate.per_page);
 
@@ -261,7 +258,7 @@ class CarsController {
 
 			if (data_update) {
 				const { search, filter } = data_update;
-				let query = optionsFilter(filter, search);
+				let query = await optionsFilter(filter, search);
 				const cars = await CarModel.find(query).select('_id').lean();
 				dataIdUpdate = cars.map(car => car._id);
 			} else {
@@ -330,7 +327,7 @@ class CarsController {
 			if (data_update && typeof data_update === 'object') {
 				const { filter, search } = data_update;
 
-				let query = optionsFilter(filter, search);
+				let query = await optionsFilter(filter, search);
 
 				const cars = await CarModel.find(query).select(
 					'_id price price_display source_crawl'
@@ -1042,7 +1039,7 @@ class CarsController {
 			let dataIdsUpdate = [];
 			if (data_update) {
 				const { search, filter } = data_update;
-				let query = optionsFilter(filter, search);
+				let query = await optionsFilter(filter, search);
 
 				const cars = await CarModel.find(query).select('_id').lean();
 				dataIdsUpdate = cars.map(car => car._id);

@@ -1,7 +1,8 @@
 const { SOURCE_CRAWL } = require('../constants/enum');
+const translateText = require('./translator');
 const { isArray } = require('./validation');
 
-module.exports = (filter, search) => {
+module.exports = async (filter, search) => {
 	let query = {};
 	if (filter) {
 		const { from_year, to_year } = filter;
@@ -203,10 +204,11 @@ module.exports = (filter, search) => {
 		}
 	}
 	if (search) {
+		const key_search = await translateText(search);
 		query = {
 			...query,
 			$or: [
-				{ car_name: { $regex: search, $options: 'i' } },
+				{ car_name: { $regex: key_search, $options: 'i' } },
 				{ license_plate: { $regex: search, $options: 'i' } }
 			]
 		};
