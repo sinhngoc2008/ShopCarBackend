@@ -4,7 +4,7 @@ module.exports = async (req, res) => {
 	try {
 		const listCategory = await CategoryCarsModel.find({})
 			.sort({
-				created_at: 1
+				created_at: -1
 			})
 			.lean();
 		res.status(200).json({
