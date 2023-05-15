@@ -212,13 +212,5 @@ module.exports = (filter, search) => {
 		};
 	}
 
-	if (filter && filter?.source_crawl) {
-		query = {
-			...query,
-			source_crawl: {
-				$in: ['manual', 'https://dautomall.com']
-			}
-		};
-	}
 	return query;
 };
