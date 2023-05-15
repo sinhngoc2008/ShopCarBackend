@@ -2,11 +2,7 @@ const CategoryCarsModel = require('../../model/CategoryCarModel');
 
 module.exports = async (req, res) => {
 	try {
-		const listCategory = await CategoryCarsModel.find({})
-			.sort({
-				created_at: -1
-			})
-			.lean();
+		const listCategory = await CategoryCarsModel.find().lean();
 		res.status(200).json({
 			message: 'Lấy danh sách thành công',
 			data: listCategory,
