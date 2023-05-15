@@ -27,7 +27,7 @@ async function MigrationAuth() {
 				root_user: true,
 				email_notification: process.env.ADMIN_EMAIL || 'thangld2407@gmail.com',
 				company_address: '161 Sajik-ro, Sejongno, Jongno-gu, Seoul, Hàn Quốc',
-				company_name: 'Công ty TNHH Thương mại và Dịch vụ Thăng Long',
+				company_name: 'VT AUTO - Ô TÔ HÀN VIỆT',
 				company_map: 'https://goo.gl/maps/zcSQjTcCUSj25PSq8'
 			});
 			console.log('Đang lưu thông tin người dùng');
