@@ -148,7 +148,7 @@ module.exports = async () => {
 			const data_save = {
 				category_name: category.category_name,
 				category_detail: category.category_detail,
-				car_count: category.car_count
+				car_count: parseInt(category.car_count) || 0
 			};
 			if (category.image) data_save.image = convertImageToLinkServer(category.image);
 
