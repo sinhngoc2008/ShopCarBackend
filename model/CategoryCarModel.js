@@ -21,6 +21,10 @@ const CategoryCarsModel = new mongoose.Schema(
 				}
 			]
 		},
+		car_count: {
+			type: Number,
+			default: 0
+		},
 		image: {
 			type: String,
 			trim: true,
