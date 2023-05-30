@@ -52,22 +52,29 @@ module.exports = async (filter, search) => {
 					error_code: 104
 				});
 			}
-			if (from_distance || to_distance) {
+			if (from_distance) {
 				query = {
 					...query,
 					distance_driven: {
-						$gte: from_distance || to_distance
+						$gte: from_distance
+					}
+				};
+			} else if (to_distance) {
+				query = {
+					...query,
+					distance_driven: {
+						$lte: to_distance
+					}
+				};
+			} else {
+				query = {
+					...query,
+					distance_driven: {
+						$gte: from_distance,
+						$lte: to_distance
 					}
 				};
 			}
-
-			query = {
-				...query,
-				distance_driven: {
-					$gte: from_distance,
-					$lte: to_distance
-				}
-			};
 		}
 
 		const { fuel_type } = filter;
@@ -118,7 +125,7 @@ module.exports = async (filter, search) => {
 		if (color) {
 			query = {
 				...query,
-				color
+				color: color
 			};
 		}
 
