@@ -7,74 +7,98 @@ module.exports = async (filter, search) => {
 	if (filter) {
 		const { from_year, to_year } = filter;
 
-		if (from_year && to_year) {
-			query = {
-				...query,
-				year_manufacture: {
-					$gte: from_year,
-					$lte: to_year
-				}
-			};
-		}
+		if (from_year || to_year) {
 
-		const { from_price, to_price } = filter;
-
-		if (typeof from_price === 'number' && typeof to_price === 'number') {
-			if (from_price > to_price) {
-				return res.status(200).json({
-					message: req.__('From price must be less than to price'),
-					error_code: 104
-				});
-			}
-			if (from_price || to_price) {
+			if (from_year && to_year) {
 				query = {
 					...query,
-					price: {
-						$gte: from_price || to_price
+					year_manufacture: {
+						$gte: from_year,
+						$lte: to_year
 					}
 				};
 			}
-			query = {
-				...query,
-				price: {
-					$gte: from_price,
-					$lte: to_price
-				}
-			};
+
+			if(from_year && !to_year) {
+				query = {
+					...query,
+					year_manufacture: {
+						$gte: from_year
+					}
+				};
+			} else if(!from_year && to_year) {
+				query = {
+					...query,
+					year_manufacture: {
+						$lte: to_year
+					}
+				};
+			}
+			
+		}
+
+		const { from_price, to_price } = filter;
+		if (from_price || to_price) {
+			
+			if(from_price && to_price) {
+				query = {
+					...query,
+					price: {
+						$gte: from_price,
+						$lte: to_price
+					}
+				};
+			}
+
+			if(from_price && !to_price) {
+				query = {
+					...query,
+					price: {
+						$gte: from_price
+					}
+				};
+			}
+
+			if(!from_price && to_price) {
+				query = {
+					...query,
+					price: {
+						$lte: to_price
+					}
+				};
+			}
 		}
 
 		const { from_distance, to_distance } = filter;
 
-		if (typeof from_distance === 'number' && typeof to_distance === 'number') {
-			if (from_distance > to_distance) {
-				return res.status(200).json({
-					message: req.__('From distance must be less than to distance'),
-					error_code: 104
-				});
-			}
-			if (from_distance) {
-				query = {
-					...query,
-					distance_driven: {
-						$gte: from_distance
-					}
-				};
-			} else if (to_distance) {
-				query = {
-					...query,
-					distance_driven: {
-						$lte: to_distance
-					}
-				};
-			} else {
-				query = {
-					...query,
-					distance_driven: {
-						$gte: from_distance,
-						$lte: to_distance
-					}
-				};
-			}
+		if (from_distance || to_distance) {
+				if(from_distance && to_distance) {
+					query = {
+						...query,
+						distance_driven: {
+							$gte: from_distance,
+							$lte: to_distance
+						}
+					};
+				}
+
+				if(from_distance && !to_distance) {
+					query = {
+						...query,
+						distance_driven: {
+							$gte: from_distance
+						}
+					};
+				}
+
+				if(!from_distance && to_distance) {
+					query = {
+						...query,
+						distance_driven: {
+							$lte: to_distance
+						}
+					};
+				}
 		}
 
 		const { fuel_type } = filter;
