@@ -4,14 +4,13 @@ const { v4: uuidv4 } = require('uuid');
 
 function htmlToPdf(url) {
 	return new Promise(async (resolve, reject) => {
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox', '--disabled-setupid-sandbox'],
+			ignoreHTTPSErrors: true
+		});
+		const page = await browser.newPage();
 		try {
-			const browser = await puppeteer.launch({
-				headless: true,
-				args: ['--no-sandbox', '--disabled-setupid-sandbox'],
-				ignoreHTTPSErrors: true
-			});
-			const page = await browser.newPage();
-
 			page.on('dialog', dialog => {
 				dialog.accept();
 			});
@@ -34,9 +33,12 @@ function htmlToPdf(url) {
 				fullPage: true
 			});
 			resolve(pathname);
-			await browser.close();
 		} catch (error) {
 			reject(error);
+		}
+		finally {
+			await page.close();
+			await browser.close();
 		}
 	});
 }

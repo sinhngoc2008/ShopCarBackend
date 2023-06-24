@@ -19,14 +19,14 @@ module.exports = async (filter, search) => {
 				};
 			}
 
-			if(from_year && !to_year) {
+			if (from_year && !to_year) {
 				query = {
 					...query,
 					year_manufacture: {
 						$gte: from_year
 					}
 				};
-			} else if(!from_year && to_year) {
+			} else if (!from_year && to_year) {
 				query = {
 					...query,
 					year_manufacture: {
@@ -34,13 +34,13 @@ module.exports = async (filter, search) => {
 					}
 				};
 			}
-			
+
 		}
 
 		const { from_price, to_price } = filter;
 		if (from_price || to_price) {
-			
-			if(from_price && to_price) {
+
+			if (from_price && to_price) {
 				query = {
 					...query,
 					price: {
@@ -50,7 +50,7 @@ module.exports = async (filter, search) => {
 				};
 			}
 
-			if(from_price && !to_price) {
+			if (from_price && !to_price) {
 				query = {
 					...query,
 					price: {
@@ -59,7 +59,7 @@ module.exports = async (filter, search) => {
 				};
 			}
 
-			if(!from_price && to_price) {
+			if (!from_price && to_price) {
 				query = {
 					...query,
 					price: {
@@ -72,33 +72,33 @@ module.exports = async (filter, search) => {
 		const { from_distance, to_distance } = filter;
 
 		if (from_distance || to_distance) {
-				if(from_distance && to_distance) {
-					query = {
-						...query,
-						distance_driven: {
-							$gte: from_distance,
-							$lte: to_distance
-						}
-					};
-				}
+			if (from_distance && to_distance) {
+				query = {
+					...query,
+					distance_driven: {
+						$gte: from_distance,
+						$lte: to_distance
+					}
+				};
+			}
 
-				if(from_distance && !to_distance) {
-					query = {
-						...query,
-						distance_driven: {
-							$gte: from_distance
-						}
-					};
-				}
+			if (from_distance && !to_distance) {
+				query = {
+					...query,
+					distance_driven: {
+						$gte: from_distance
+					}
+				};
+			}
 
-				if(!from_distance && to_distance) {
-					query = {
-						...query,
-						distance_driven: {
-							$lte: to_distance
-						}
-					};
-				}
+			if (!from_distance && to_distance) {
+				query = {
+					...query,
+					distance_driven: {
+						$lte: to_distance
+					}
+				};
+			}
 		}
 
 		const { fuel_type } = filter;
@@ -173,60 +173,37 @@ module.exports = async (filter, search) => {
 			};
 		}
 
-		const { category_name, rating, model_name, detail_name } = filter;
+		const { category_name, model_name, car_details, rating } = filter;
 		if (category_name) {
 			query = {
 				...query,
-				$or: [
-					{ other_infor: { $regex: category_name, $options: 'i' } },
-					{ model_name: { $regex: category_name, $options: 'i' } },
-					{ car_name: { $regex: category_name, $options: 'i' } },
-					{ category_name: { $regex: category_name, $options: 'i' } }
+				$and: [
+					{ category_name: category_name },
 				]
 			};
 			if (model_name) {
-				const { $or, ...rest } = query;
 				query = {
-					...rest,
+					...query,
 					$and: [
-						{
-							$or: [
-								{ car_name: { $regex: category_name, $options: 'i' } },
-								{ category_name: { $regex: category_name, $options: 'i' } }
-							]
-						},
-						{
-							$or: [
-								{ other_infor: { $regex: model_name, $options: 'i' } },
-								{ model_name: { $regex: model_name, $options: 'i' } }
-							]
-						}
+						...query.$and,
+						{model_name: model_name }
 					]
 				};
 
-				if (detail_name) {
-					const { $and, ...rest } = query;
+				if (car_details) {
 					query = {
-						...rest,
+						...query,
 						$and: [
-							...$and,
-							{
-								detail_name
-							}
+							...query.$and,
+							{ detail_name: car_details }
 						]
 					};
-					if (rating) {
-						const { $and, ...rest } = query;
+					if (rating && rating.length > 0) {
 						query = {
-							...rest,
+							...query,
 							$and: [
-								...$and,
-								{
-									rating: {
-										$regex: rating,
-										$options: 'i'
-									}
-								}
+								...query.$and,
+								{ rating: {$in: rating } }
 							]
 						};
 					}

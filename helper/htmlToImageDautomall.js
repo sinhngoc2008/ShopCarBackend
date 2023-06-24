@@ -4,20 +4,19 @@ const { v4: uuidv4 } = require('uuid');
 
 function htmlToImageDautomall(url) {
 	return new Promise(async (resolve, reject) => {
+		const browser = await puppeteer.launch({
+			headless: true,
+			args: ['--no-sandbox', '--disabled-setupid-sandbox'],
+			ignoreHTTPSErrors: true
+		});
+		const page = await browser.newPage();
 		try {
-			const browser = await puppeteer.launch({
-				headless: true,
-				args: ['--no-sandbox', '--disabled-setupid-sandbox'],
-				ignoreHTTPSErrors: true
-			});
 			if (!url) {
 				return resolve('/null');
 			}
 			if (!url.includes('pc.dautomall.com')) {
 				return resolve('/null');
 			}
-
-			const page = await browser.newPage();
 			await page.goto(url, { waitUntil: 'load', timeout: 0 });
 			await page.waitForSelector('#form1');
 			await page.addStyleTag({
@@ -39,6 +38,10 @@ function htmlToImageDautomall(url) {
 			await browser.close();
 		} catch (error) {
 			resolve('/null');
+		}
+		finally {
+			await page.close();
+			await browser.close();
 		}
 	});
 }

@@ -175,14 +175,12 @@ class CarsController {
 	}
 
 	async getListCars(req, res) {
-		let { page, limit, filter, sort, search } = req.body;
-
-		let query = await optionsFilter(filter, search);
-
 		try {
-			const count = await CarModel.countDocuments({
-				...query
-			});
+			let { page, limit, filter, sort, search } = req.body;
+
+			let query = await optionsFilter(filter, search);
+			
+			const count = await CarModel.countDocuments(query);
 			let currentPage = parseInt(page) || 1;
 
 			let perPage = parseInt(limit) || 10;
