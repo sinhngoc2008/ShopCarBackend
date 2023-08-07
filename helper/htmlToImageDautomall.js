@@ -35,7 +35,6 @@ function htmlToImageDautomall(url) {
 				fullPage: true
 			});
 			resolve(pathname);
-			await browser.close();
 		} catch (error) {
 			resolve('/null');
 		}
