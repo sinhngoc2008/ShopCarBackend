@@ -75,6 +75,12 @@ module.exports = async (req, res) => {
 				status_code: 200
 			});
 		} else {
+			data?.listImage?.forEach(item => {
+				let img = convertImageToLinkServer(item);
+				list_image_converted.push(img);
+			});
+
+			let primary_image = convertImageToLinkServer(data?.primary_image) || '';
 			await CarModel.findOneAndUpdate(
 				{
 					car_code: data?.car_code?.trim()
@@ -101,6 +107,8 @@ module.exports = async (req, res) => {
 					model_name: data?.model_name,
 					detail_name: data?.detail_name,
 					other_infor: data?.other_infor,
+					primary_image: primary_image,
+					images: list_image_converted || [],
 				}
 			);
 
