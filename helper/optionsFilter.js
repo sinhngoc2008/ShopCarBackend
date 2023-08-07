@@ -186,7 +186,7 @@ module.exports = async (filter, search) => {
 					...query,
 					$and: [
 						...query.$and,
-						{model_name: model_name }
+						{ model_name: model_name }
 					]
 				};
 
@@ -203,13 +203,68 @@ module.exports = async (filter, search) => {
 							...query,
 							$and: [
 								...query.$and,
-								{ rating: {$in: rating } }
+								{ rating: { $in: rating } }
 							]
 						};
 					}
 				}
 			}
 		}
+
+		const { created_at, created_cond, updated_at, updated_cond } = filter;
+		if (created_at) {
+			if (created_cond == "eq") {
+				query = {
+					...query,
+					created_at: {
+						$eq: [new Date(created_at)]
+					}
+				};
+			}
+			else if (created_cond == "lt") {
+				query = {
+					...query,
+					created_at: {
+						$lt: [new Date(created_at)]
+					}
+				};
+			}
+			else if (created_cond == "gt") {
+				query = {
+					...query,
+					created_at: {
+						$gt: [new Date(created_at)]
+					}
+				};
+			}
+		}
+		if (updated_at) {
+			if (updated_cond == "eq") {
+				query = {
+					...query,
+					updated_at: {
+						$eq: [new Date(updated_at)]
+					}
+				};
+			}
+			else if (updated_cond == "lt") {
+				query = {
+					...query,
+					updated_at: {
+						$lt: [new Date(updated_at)]
+					}
+				};
+			}
+			else if (updated_cond == "gt") {
+				query = {
+					...query,
+					updated_at: {
+						$gt: [new Date(updated_at)]
+					}
+				};
+			}
+		}
+
 	}
 	if (search) {
 		const key_search = await translateText(search);
