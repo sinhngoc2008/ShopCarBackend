@@ -178,6 +178,12 @@ class CarsController {
 		try {
 			let { page, limit, filter, sort, search } = req.body;
 
+			if(!sort) {
+				sort = {
+					created_at: -1
+				}
+			}
+
 			let query = await optionsFilter(filter, search);
 			
 			const count = await CarModel.countDocuments(query);
